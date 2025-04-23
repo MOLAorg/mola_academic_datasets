@@ -3,8 +3,8 @@ Changelog for package kitti_metrics_eval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Forthcoming
------------
+1.6.4 (2025-04-23)
+------------------
 * modernize clang-format
 * Contributors: Jose Luis Blanco-Claraco
 
