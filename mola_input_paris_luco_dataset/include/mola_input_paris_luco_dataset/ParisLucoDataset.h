@@ -64,100 +64,90 @@ namespace mola
  *
  * \ingroup mola_input_paris_luco_dataset_grp
  */
-class ParisLucoDataset : public RawDataSourceBase,
-                         public OfflineDatasetSource,
-                         public Dataset_UI
+class ParisLucoDataset : public RawDataSourceBase, public OfflineDatasetSource, public Dataset_UI
 {
-    DEFINE_MRPT_OBJECT(ParisLucoDataset, mola)
+  DEFINE_MRPT_OBJECT(ParisLucoDataset, mola)
 
-   public:
-    ParisLucoDataset();
-    ~ParisLucoDataset() override = default;
+ public:
+  ParisLucoDataset();
+  ~ParisLucoDataset() override = default;
 
-    // See docs in base class
-    void spinOnce() override;
-    bool hasGroundTruthTrajectory() const override
-    {
-        return !groundTruthTrajectory_.empty();
-    }
-    trajectory_t getGroundTruthTrajectory() const override
-    {
-        return groundTruthTrajectory_;
-    }
+  // See docs in base class
+  void         spinOnce() override;
+  bool         hasGroundTruthTrajectory() const override { return !groundTruthTrajectory_.empty(); }
+  trajectory_t getGroundTruthTrajectory() const override { return groundTruthTrajectory_; }
 
-    // See docs in base class:
-    size_t datasetSize() const override;
+  // See docs in base class:
+  size_t datasetSize() const override;
 
-    mrpt::obs::CSensoryFrame::Ptr datasetGetObservations(
-        size_t timestep) const override;
+  mrpt::obs::CSensoryFrame::Ptr datasetGetObservations(size_t timestep) const override;
 
-    // Virtual interface of Dataset_UI (see docs in derived class)
-    size_t datasetUI_size() const override { return datasetSize(); }
-    size_t datasetUI_lastQueriedTimestep() const override
-    {
-        auto lck = mrpt::lockHelper(dataset_ui_mtx_);
-        return last_used_tim_index_;
-    }
-    double datasetUI_playback_speed() const override
-    {
-        auto lck = mrpt::lockHelper(dataset_ui_mtx_);
-        return time_warp_scale_;
-    }
-    void datasetUI_playback_speed(double speed) override
-    {
-        auto lck         = mrpt::lockHelper(dataset_ui_mtx_);
-        time_warp_scale_ = speed;
-    }
-    bool datasetUI_paused() const override
-    {
-        auto lck = mrpt::lockHelper(dataset_ui_mtx_);
-        return paused_;
-    }
-    void datasetUI_paused(bool paused) override
-    {
-        auto lck = mrpt::lockHelper(dataset_ui_mtx_);
-        paused_  = paused;
-    }
-    void datasetUI_teleport(size_t timestep) override
-    {
-        auto lck       = mrpt::lockHelper(dataset_ui_mtx_);
-        teleport_here_ = timestep;
-    }
+  // Virtual interface of Dataset_UI (see docs in derived class)
+  size_t datasetUI_size() const override { return datasetSize(); }
+  size_t datasetUI_lastQueriedTimestep() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return last_used_tim_index_;
+  }
+  double datasetUI_playback_speed() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return time_warp_scale_;
+  }
+  void datasetUI_playback_speed(double speed) override
+  {
+    auto lck         = mrpt::lockHelper(dataset_ui_mtx_);
+    time_warp_scale_ = speed;
+  }
+  bool datasetUI_paused() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return paused_;
+  }
+  void datasetUI_paused(bool paused) override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    paused_  = paused;
+  }
+  void datasetUI_teleport(size_t timestep) override
+  {
+    auto lck       = mrpt::lockHelper(dataset_ui_mtx_);
+    teleport_here_ = timestep;
+  }
 
-   protected:
-    // See docs in base class
-    void initialize_rds(const Yaml& cfg) override;
+ protected:
+  // See docs in base class
+  void initialize_rds(const Yaml& cfg) override;
 
-   private:
-    bool        initialized_ = false;
-    std::string base_dir_;  //!< base dir for "00/*".
-    std::string sequence_ = "00";  //!< only "00" in this dataset
+ private:
+  bool        initialized_ = false;
+  std::string base_dir_;  //!< base dir for "00/*".
+  std::string sequence_ = "00";  //!< only "00" in this dataset
 
-    const double lidarPeriod_ = 1.0 / 10.0;  // [s]
+  const double lidarPeriod_ = 1.0 / 10.0;  // [s]
 
-    timestep_t                             replay_next_tim_index_{0};
-    std::optional<mrpt::Clock::time_point> last_play_wallclock_time_;
-    double                                 last_dataset_time_ = 0;
+  timestep_t                             replay_next_tim_index_{0};
+  std::optional<mrpt::Clock::time_point> last_play_wallclock_time_;
+  double                                 last_dataset_time_ = 0;
 
-    std::vector<std::string>  lstLidarFiles_;
-    mrpt::math::CMatrixDouble groundTruthTranslations_;
-    trajectory_t              groundTruthTrajectory_;
-    mutable std::map<timestep_t, mrpt::obs::CObservation::Ptr>
-        read_ahead_lidar_obs_;
+  std::vector<std::string>                                   lstLidarFiles_;
+  mrpt::math::CMatrixDouble                                  groundTruthTranslations_;
+  trajectory_t                                               groundTruthTrajectory_;
+  mutable std::map<timestep_t, mrpt::obs::CObservation::Ptr> read_ahead_lidar_obs_;
 
-    std::vector<double> lst_timestamps_;
-    double              replay_time_{.0};
-    std::string         seq_dir_;
+  std::vector<double> lst_timestamps_;
+  double              replay_time_{.0};
+  std::string         seq_dir_;
 
-    void load_lidar(timestep_t step) const;
-    void readAheadSome();
-    void autoUnloadOldEntries() const;
+  void load_lidar(timestep_t step) const;
+  void readAheadSome();
+  void autoUnloadOldEntries() const;
 
-    mutable timestep_t    last_used_tim_index_ = 0;
-    bool                  paused_              = false;
-    double                time_warp_scale_     = 1.0;
-    std::optional<size_t> teleport_here_;
-    mutable std::mutex    dataset_ui_mtx_;
+  mutable timestep_t    last_used_tim_index_ = 0;
+  bool                  paused_              = false;
+  double                time_warp_scale_     = 1.0;
+  std::optional<size_t> teleport_here_;
+  mutable std::mutex    dataset_ui_mtx_;
 };
 
 }  // namespace mola

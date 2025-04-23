@@ -76,160 +76,149 @@ namespace mola
  *
  * \ingroup mola_input_mulran_dataset_grp
  */
-class MulranDataset : public RawDataSourceBase,
-                      public OfflineDatasetSource,
-                      public Dataset_UI
+class MulranDataset : public RawDataSourceBase, public OfflineDatasetSource, public Dataset_UI
 {
-    DEFINE_MRPT_OBJECT(MulranDataset, mola)
+  DEFINE_MRPT_OBJECT(MulranDataset, mola)
 
-   public:
-    MulranDataset();
-    ~MulranDataset() override = default;
+ public:
+  MulranDataset();
+  ~MulranDataset() override = default;
 
-    static constexpr double HDOP_REFERENCE_METERS = 4.5;
+  static constexpr double HDOP_REFERENCE_METERS = 4.5;
 
-    // See docs in base class
-    void spinOnce() override;
-    bool hasGroundTruthTrajectory() const override
-    {
-        return !groundTruthTrajectory_.empty();
-    }
-    trajectory_t getGroundTruthTrajectory() const override
-    {
-        return groundTruthTrajectory_;
-    }
+  // See docs in base class
+  void         spinOnce() override;
+  bool         hasGroundTruthTrajectory() const override { return !groundTruthTrajectory_.empty(); }
+  trajectory_t getGroundTruthTrajectory() const override { return groundTruthTrajectory_; }
 
-    /** Direct programmatic access to dataset observations. The return may be
-     * nullptr if the given index is not of the requested type.
-     *
-     * `step` is in the range `0` to `getGroundTruthTrajectory()-1`
-     */
-    mrpt::obs::CObservationPointCloud::Ptr getPointCloud(timestep_t step) const;
-    mrpt::obs::CObservationGPS::Ptr        getGPS(timestep_t step) const;
-    mrpt::obs::CObservationIMU::Ptr        getIMU(timestep_t step) const;
+  /** Direct programmatic access to dataset observations. The return may be
+   * nullptr if the given index is not of the requested type.
+   *
+   * `step` is in the range `0` to `getGroundTruthTrajectory()-1`
+   */
+  mrpt::obs::CObservationPointCloud::Ptr getPointCloud(timestep_t step) const;
+  mrpt::obs::CObservationGPS::Ptr        getGPS(timestep_t step) const;
+  mrpt::obs::CObservationIMU::Ptr        getIMU(timestep_t step) const;
 
-    // See docs in base class:
-    size_t datasetSize() const override;
+  // See docs in base class:
+  size_t datasetSize() const override;
 
-    mrpt::obs::CSensoryFrame::Ptr datasetGetObservations(
-        size_t timestep) const override;
+  mrpt::obs::CSensoryFrame::Ptr datasetGetObservations(size_t timestep) const override;
 
-    bool hasGPS() const { return !gpsCsvData_.empty(); }
+  bool hasGPS() const { return !gpsCsvData_.empty(); }
 
-    // Virtual interface of Dataset_UI (see docs in derived class)
-    size_t datasetUI_size() const override { return datasetSize(); }
-    size_t datasetUI_lastQueriedTimestep() const override
-    {
-        auto lck = mrpt::lockHelper(dataset_ui_mtx_);
-        return last_used_tim_index_;
-    }
-    double datasetUI_playback_speed() const override
-    {
-        auto lck = mrpt::lockHelper(dataset_ui_mtx_);
-        return time_warp_scale_;
-    }
-    void datasetUI_playback_speed(double speed) override
-    {
-        auto lck         = mrpt::lockHelper(dataset_ui_mtx_);
-        time_warp_scale_ = speed;
-    }
-    bool datasetUI_paused() const override
-    {
-        auto lck = mrpt::lockHelper(dataset_ui_mtx_);
-        return paused_;
-    }
-    void datasetUI_paused(bool paused) override
-    {
-        auto lck = mrpt::lockHelper(dataset_ui_mtx_);
-        paused_  = paused;
-    }
-    void datasetUI_teleport(size_t timestep) override
-    {
-        auto lck       = mrpt::lockHelper(dataset_ui_mtx_);
-        teleport_here_ = timestep;
-    }
+  // Virtual interface of Dataset_UI (see docs in derived class)
+  size_t datasetUI_size() const override { return datasetSize(); }
+  size_t datasetUI_lastQueriedTimestep() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return last_used_tim_index_;
+  }
+  double datasetUI_playback_speed() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return time_warp_scale_;
+  }
+  void datasetUI_playback_speed(double speed) override
+  {
+    auto lck         = mrpt::lockHelper(dataset_ui_mtx_);
+    time_warp_scale_ = speed;
+  }
+  bool datasetUI_paused() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return paused_;
+  }
+  void datasetUI_paused(bool paused) override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    paused_  = paused;
+  }
+  void datasetUI_teleport(size_t timestep) override
+  {
+    auto lck       = mrpt::lockHelper(dataset_ui_mtx_);
+    teleport_here_ = timestep;
+  }
 
-   protected:
-    // See docs in base class
-    void initialize_rds(const Yaml& cfg) override;
+ protected:
+  // See docs in base class
+  void initialize_rds(const Yaml& cfg) override;
 
-   private:
-    bool        initialized_ = false;
-    std::string base_dir_;  //!< base dir for "sequences/*".
-    std::string sequence_;  //!< "00", "01", ...
-    bool        lidar_to_ground_truth_1to1_ = true;
+ private:
+  bool        initialized_ = false;
+  std::string base_dir_;  //!< base dir for "sequences/*".
+  std::string sequence_;  //!< "00", "01", ...
+  bool        lidar_to_ground_truth_1to1_ = true;
 
-    bool publish_lidar_        = true;
-    bool publish_gps_          = true;
-    bool publish_imu_          = true;
-    bool publish_ground_truth_ = true;
+  bool publish_lidar_        = true;
+  bool publish_gps_          = true;
+  bool publish_imu_          = true;
+  bool publish_ground_truth_ = true;
 
-    std::optional<mrpt::Clock::time_point> last_play_wallclock_time_;
-    double                                 last_dataset_time_ = 0;
+  std::optional<mrpt::Clock::time_point> last_play_wallclock_time_;
+  double                                 last_dataset_time_ = 0;
 
-    enum class EntryType : uint8_t
-    {
-        Invalid = 0,
-        Lidar,
-        GNSS,
-        GroundTruth,
-        IMU,
-    };
+  enum class EntryType : uint8_t
+  {
+    Invalid = 0,
+    Lidar,
+    GNSS,
+    GroundTruth,
+    IMU,
+  };
 
-    struct Entry
-    {
-        EntryType type = EntryType::Invalid;
+  struct Entry
+  {
+    EntryType type = EntryType::Invalid;
 
-        /// In lstPointCloudFiles_ and read_ahead_lidar_obs_
-        timestep_t lidarIdx = 0;  // idx in lstPointCloudFiles_
-        timestep_t gpsIdx   = 0;  // row indices in gpsCsvData_
-        timestep_t gtIdx    = 0;  // idx in groundTruthTrajectory_
-        timestep_t imuIdx   = 0;  // idx in imuCsvData_
-    };
+    /// In lstPointCloudFiles_ and read_ahead_lidar_obs_
+    timestep_t lidarIdx = 0;  // idx in lstPointCloudFiles_
+    timestep_t gpsIdx   = 0;  // row indices in gpsCsvData_
+    timestep_t gtIdx    = 0;  // idx in groundTruthTrajectory_
+    timestep_t imuIdx   = 0;  // idx in imuCsvData_
+  };
 
-    std::multimap<double, Entry>           datasetEntries_;
-    std::multimap<double, Entry>::iterator replay_next_it_;
+  std::multimap<double, Entry>           datasetEntries_;
+  std::multimap<double, Entry>::iterator replay_next_it_;
 
-    std::vector<std::string> lstPointCloudFiles_;
+  std::vector<std::string> lstPointCloudFiles_;
 
-    trajectory_t groundTruthTrajectory_;
-    mutable std::map<timestep_t, mrpt::obs::CObservationPointCloud::Ptr>
-        read_ahead_lidar_obs_;
+  trajectory_t                                                         groundTruthTrajectory_;
+  mutable std::map<timestep_t, mrpt::obs::CObservationPointCloud::Ptr> read_ahead_lidar_obs_;
 
-    mrpt::math::CMatrixDouble gpsCsvData_;
-    /** I found no extrinsics for the GPS sensor in this dataset web, but it
-     * *seems* it's the same system than in "Complex Urban Dataset":
-     * https://sites.google.com/view/complex-urban-dataset/system?authuser=0
-     */
-    mrpt::poses::CPose3D gpsPoseOnVehicle_ = mrpt::poses::CPose3D::Identity();
-    mrpt::poses::CPose3D ousterPoseOnVehicle_;
+  mrpt::math::CMatrixDouble gpsCsvData_;
+  /** I found no extrinsics for the GPS sensor in this dataset web, but it
+   * *seems* it's the same system than in "Complex Urban Dataset":
+   * https://sites.google.com/view/complex-urban-dataset/system?authuser=0
+   */
+  mrpt::poses::CPose3D gpsPoseOnVehicle_ = mrpt::poses::CPose3D::Identity();
+  mrpt::poses::CPose3D ousterPoseOnVehicle_;
 
-    mrpt::math::CMatrixDouble imuCsvData_;
+  mrpt::math::CMatrixDouble imuCsvData_;
 
-    /** It *seems* authors used the same system than in "Complex Urban Dataset":
-     * https://sites.google.com/view/complex-urban-dataset/system?authuser=0
-     *
-     * So IMU should be aligned XYZ with the vehicle, and 7cm backwards.
-     */
-    mrpt::poses::CPose3D imuPoseOnVehicle_ =
-        mrpt::poses::CPose3D::FromTranslation(-0.07, .0, .0);
+  /** It *seems* authors used the same system than in "Complex Urban Dataset":
+   * https://sites.google.com/view/complex-urban-dataset/system?authuser=0
+   *
+   * So IMU should be aligned XYZ with the vehicle, and 7cm backwards.
+   */
+  mrpt::poses::CPose3D imuPoseOnVehicle_ = mrpt::poses::CPose3D::FromTranslation(-0.07, .0, .0);
 
-    double      replay_time_ = .0;
-    std::string seq_dir_;
+  double      replay_time_ = .0;
+  std::string seq_dir_;
 
-    void                            load_lidar(timestep_t step) const;
-    mrpt::obs::CObservationGPS::Ptr get_gps_by_row_index(size_t row) const;
-    mrpt::obs::CObservationIMU::Ptr get_imu_by_row_index(size_t row) const;
+  void                            load_lidar(timestep_t step) const;
+  mrpt::obs::CObservationGPS::Ptr get_gps_by_row_index(size_t row) const;
+  mrpt::obs::CObservationIMU::Ptr get_imu_by_row_index(size_t row) const;
 
-    void autoUnloadOldEntries() const;
+  void autoUnloadOldEntries() const;
 
-    static double LidarFileNameToTimestamp(const std::string& filename);
+  static double LidarFileNameToTimestamp(const std::string& filename);
 
-    mutable timestep_t    last_used_tim_index_ = 0;
-    bool                  paused_              = false;
-    double                time_warp_scale_     = 1.0;
-    std::optional<size_t> teleport_here_;
-    mutable std::mutex    dataset_ui_mtx_;
+  mutable timestep_t    last_used_tim_index_ = 0;
+  bool                  paused_              = false;
+  double                time_warp_scale_     = 1.0;
+  std::optional<size_t> teleport_here_;
+  mutable std::mutex    dataset_ui_mtx_;
 };
 
 }  // namespace mola
