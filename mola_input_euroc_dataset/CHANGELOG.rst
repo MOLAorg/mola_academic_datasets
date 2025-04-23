@@ -2,6 +2,11 @@
 Changelog for package mola_input_euroc_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* modernize clang-format
+* Contributors: Jose Luis Blanco-Claraco
+
 1.6.3 (2025-03-15)
 ------------------
 
