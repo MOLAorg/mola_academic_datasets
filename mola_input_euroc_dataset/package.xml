@@ -9,7 +9,7 @@
   <description>Offline RawDataSource from EUROC SLAM datasets</description>
 
   <maintainer email="joseluisblancoc@gmail.com">Jose-Luis Blanco-Claraco</maintainer>
-  <license file="LICENSE">BSD</license>
+  <license file="LICENSE">BSD-3-Clause</license>
 
   <url type="website">https://github.com/MOLAorg/mola/tree/develop/mola_input_euroc_dataset</url>
 
