@@ -2,8 +2,8 @@
 Changelog for package mola_input_euroc_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.0 (2025-05-25)
+------------------
 * Update license tag to "BSD-3-Clause"
 * Update copyright year
 * Contributors: Jose Luis Blanco-Claraco
