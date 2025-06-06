@@ -2,8 +2,8 @@
 Changelog for package mola_input_euroc_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2025-06-06)
+------------------
 * Depend less on ament and more on pure cmake
 * Contributors: Jose Luis Blanco-Claraco
 
