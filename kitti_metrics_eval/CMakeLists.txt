@@ -36,3 +36,7 @@ mola_add_executable(
 if(CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(kitti-metrics-eval PRIVATE "-Wno-unused-result" "-Wno-shadow" "-Wno-sign-compare")
 endif()
+
+# Silent cmake warnings:
+set(unused ${BUILD_TESTING})
+unset(unused)
