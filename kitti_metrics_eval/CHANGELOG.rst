@@ -3,8 +3,8 @@ Changelog for package kitti_metrics_eval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Forthcoming
------------
+1.9.1 (2025-07-07)
+------------------
 * Fix cmake warning
 * Contributors: Jose Luis Blanco-Claraco
 
