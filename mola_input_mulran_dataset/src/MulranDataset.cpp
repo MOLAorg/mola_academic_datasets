@@ -103,6 +103,7 @@ void MulranDataset::initialize_rds(const Yaml& c)
   YAML_LOAD_MEMBER_OPT(publish_gps, bool);
   YAML_LOAD_MEMBER_OPT(publish_imu, bool);
   YAML_LOAD_MEMBER_OPT(publish_ground_truth, bool);
+  YAML_LOAD_MEMBER_OPT(normalize_intensity_channel_maximum, float);
 
   // Make list of all existing files and preload everything we may need later
   // to quickly replay the dataset in realtime:
@@ -501,13 +502,28 @@ void MulranDataset::load_lidar(timestep_t step) const
   obs->pointcloud = pts;
 
   // Load XYZI from kitti-like file:
-  mrpt::maps::CPointsMapXYZI kittiData;
+  {
+    mrpt::maps::CPointsMapXYZI kittiData;
 
-  bool loadOk = kittiData.loadFromKittiVelodyneFile(f);
-  ASSERTMSG_(loadOk, mrpt::format("Error loading kitti scan file: '%s'", f.c_str()));
+    bool loadOk = kittiData.loadFromKittiVelodyneFile(f);
+    ASSERTMSG_(loadOk, mrpt::format("Error loading kitti scan file: '%s'", f.c_str()));
 
-  // Copy XYZI:
-  *pts = kittiData;
+    // Normalize intensity data so it's maximum 1.0
+    auto* Is = kittiData.getPointsBufferRef_intensity();
+    ASSERT_(Is && !Is->empty());
+    const float max_intensity_inv = 1.0f / normalize_intensity_channel_maximum_;
+    for (float& intensity : *Is)
+    {
+      intensity *= max_intensity_inv;
+      if (intensity > 1.0f)
+      {
+        intensity = 1.0f;
+      }
+    }
+
+    // Copy XYZI:
+    *pts = kittiData;
+  }
 
   const size_t nPts = pts->size();
   ASSERT_EQUAL_(nPts, static_cast<size_t>(1024U) * 64U);
