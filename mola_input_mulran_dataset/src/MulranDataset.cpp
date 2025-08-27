@@ -51,10 +51,14 @@ MulranDataset::MulranDataset() = default;
 namespace
 {
 void build_list_files(
-    const std::string& dir, const std::string& file_extension, std::vector<std::string>& out_lst)
+    const std::string& dir, const std::string& file_extension,  // NOLINT
+    std::vector<std::string>& out_lst)
 {
   out_lst.clear();
-  if (!mrpt::system::directoryExists(dir)) return;
+  if (!mrpt::system::directoryExists(dir))
+  {
+    return;
+  }
 
   using direxpl = mrpt::system::CDirectoryExplorer;
   direxpl::TFileInfoList lstFiles;
@@ -213,7 +217,12 @@ void MulranDataset::initialize_rds(const Yaml& c)
       const double t = 1e-9 * gtMatrix(i, 0);
 
       for (int row = 0, ij_idx = 1; row < 3; row++)
-        for (int col = 0; col < 4; col++, ij_idx++) m(row, col) = gtMatrix(i, ij_idx);
+      {
+        for (int col = 0; col < 4; col++, ij_idx++)
+        {
+          m(row, col) = gtMatrix(i, ij_idx);
+        }
+      }
 
       const auto gtPose = mrpt::poses::CPose3D::FromHomogeneousMatrix(m);
 
@@ -256,7 +265,10 @@ void MulranDataset::initialize_rds(const Yaml& c)
       {
         auto idx = *it;
 
-        lstPointCloudFiles_.erase(std::next(lstPointCloudFiles_.begin(), idx));
+        lstPointCloudFiles_.erase(
+            std::next(
+                lstPointCloudFiles_.begin(),
+                static_cast<std::vector<std::string>::difference_type>(idx)));
       }
 
       MRPT_LOG_INFO_FMT(
@@ -297,7 +309,10 @@ void MulranDataset::spinOnce()
   const auto tNow = mrpt::Clock::now();
 
   // Starting time:
-  if (!last_play_wallclock_time_) last_play_wallclock_time_ = tNow;
+  if (!last_play_wallclock_time_)
+  {
+    last_play_wallclock_time_ = tNow;
+  }
 
   // get current replay time:
   auto         lckUIVars       = mrpt::lockHelper(dataset_ui_mtx_);
@@ -323,7 +338,10 @@ void MulranDataset::spinOnce()
   }
   else
   {
-    if (paused) return;
+    if (paused)
+    {
+      return;
+    }
     // move forward replayed dataset time:
     last_dataset_time_ += dt;
   }
@@ -336,7 +354,8 @@ void MulranDataset::spinOnce()
         10.0, "End of dataset reached! Nothing else to publish (CTRL+C to quit)");
     return;
   }
-  else if (!datasetEntries_.empty())
+
+  if (!datasetEntries_.empty())
   {
     const auto pos = std::distance(datasetEntries_.begin(), replay_next_it_);
 
@@ -362,7 +381,10 @@ void MulranDataset::spinOnce()
     {
       case EntryType::Lidar:
       {
-        if (!publish_lidar_) break;
+        if (!publish_lidar_)
+        {
+          break;
+        }
 
         lastUsedLidarIdx = de.lidarIdx;
 
@@ -378,7 +400,10 @@ void MulranDataset::spinOnce()
 
       case EntryType::GNSS:
       {
-        if (!publish_gps_) break;
+        if (!publish_gps_)
+        {
+          break;
+        }
 
         auto o = get_gps_by_row_index(de.gpsIdx);
         this->sendObservationsToFrontEnds(o);
@@ -387,7 +412,10 @@ void MulranDataset::spinOnce()
 
       case EntryType::IMU:
       {
-        if (!publish_imu_) break;
+        if (!publish_imu_)
+        {
+          break;
+        }
 
         auto o = get_imu_by_row_index(de.imuIdx);
         this->sendObservationsToFrontEnds(o);
@@ -396,7 +424,10 @@ void MulranDataset::spinOnce()
 
       case EntryType::GroundTruth:
       {
-        if (!publish_ground_truth_) break;
+        if (!publish_ground_truth_)
+        {
+          break;
+        }
 
         // Get GT pose: it's already stored and correctly transformed
         // into groundTruthTrajectory_:
@@ -435,7 +466,10 @@ void MulranDataset::spinOnce()
     if (nextLidarIdx < lstPointCloudFiles_.size())
     {
       ProfilerEntry tle(profiler_, "spinOnce.read_ahead");
-      if (0 == read_ahead_lidar_obs_.count(nextLidarIdx)) load_lidar(nextLidarIdx);
+      if (0 == read_ahead_lidar_obs_.count(nextLidarIdx))
+      {
+        load_lidar(nextLidarIdx);
+      }
     }
   }
 
@@ -450,7 +484,10 @@ void MulranDataset::load_lidar(timestep_t step) const
   autoUnloadOldEntries();
 
   // Already loaded?
-  if (read_ahead_lidar_obs_[step]) return;
+  if (read_ahead_lidar_obs_[step])
+  {
+    return;
+  }
 
   ProfilerEntry tleg(profiler_, "load_lidar");
 
@@ -473,18 +510,18 @@ void MulranDataset::load_lidar(timestep_t step) const
   *pts = kittiData;
 
   const size_t nPts = pts->size();
-  ASSERT_EQUAL_(nPts, 1024 * 64);
+  ASSERT_EQUAL_(nPts, static_cast<size_t>(1024U) * 64U);
   pts->resize_XYZIRT(nPts, true /*i*/, true /*R*/, true /*t*/);
 
   // Fixed to 10 Hz rotation in this dataset:
-  const double sweepDuration = 0.1;  //  [s]
-  const double At            = -0.5 * sweepDuration;
+  const float sweepDuration = 0.1f;  //  [s]
+  const float At            = -0.5f * sweepDuration;
 
   for (size_t i = 0; i < nPts; i++)
   {
-    const int row = i % 64;
-    const int col = i / 64;
-    pts->setPointTime(i, At + sweepDuration * col / 1024.0);
+    const int row = static_cast<int>(i) % 64;
+    const int col = static_cast<int>(i) / 64;
+    pts->setPointTime(i, At + sweepDuration * static_cast<float>(col) / 1024.0f);
     pts->setPointRing(i, row);
   }
 
@@ -563,7 +600,10 @@ mrpt::obs::CObservationPointCloud::Ptr MulranDataset::getPointCloud(timestep_t s
   auto it = datasetEntries_.begin();
   std::advance(it, step);
 
-  if (it->second.type != EntryType::Lidar) return {};
+  if (it->second.type != EntryType::Lidar)
+  {
+    return {};
+  }
 
   auto lidarIdx = it->second.lidarIdx;
 
@@ -579,7 +619,10 @@ mrpt::obs::CObservationGPS::Ptr MulranDataset::getGPS(timestep_t step) const
   auto it = datasetEntries_.begin();
   std::advance(it, step);
 
-  if (it->second.type != EntryType::GNSS) return {};
+  if (it->second.type != EntryType::GNSS)
+  {
+    return {};
+  }
 
   return get_gps_by_row_index(it->second.gpsIdx);
 }
@@ -592,7 +635,10 @@ mrpt::obs::CObservationIMU::Ptr MulranDataset::getIMU(timestep_t step) const
   auto it = datasetEntries_.begin();
   std::advance(it, step);
 
-  if (it->second.type != EntryType::IMU) return {};
+  if (it->second.type != EntryType::IMU)
+  {
+    return {};
+  }
 
   return get_imu_by_row_index(it->second.imuIdx);
 }
@@ -622,8 +668,8 @@ mrpt::obs::CObservationGPS::Ptr MulranDataset::get_gps_by_row_index(size_t row) 
   gga->fields.UTCTime.minute = tp.minute;
   gga->fields.UTCTime.sec    = tp.second;
 
-  gga->fields.thereis_HDOP      = true;
-  gga->fields.HDOP              = std::sqrt(gpsCsvData_(row, 4)) / HDOP_REFERENCE_METERS;
+  gga->fields.thereis_HDOP = true;
+  gga->fields.HDOP = static_cast<float>(std::sqrt(gpsCsvData_(row, 4)) / HDOP_REFERENCE_METERS);
   gga->fields.altitude_meters   = gpsCsvData_(row, 3);
   gga->fields.fix_quality       = 1;  // regular GPS fix.
   gga->fields.latitude_degrees  = gpsCsvData_(row, 1);
@@ -635,8 +681,12 @@ mrpt::obs::CObservationGPS::Ptr MulranDataset::get_gps_by_row_index(size_t row) 
   // full 3x3 cov:
   auto& cov = obs->covariance_enu.emplace();
   for (int r = 0, i = 0; r < 3; r++)
-    for (int c = 0; c < 3; c++)  //
+  {
+    for (int c = 0; c < 3; c++)
+    {
       cov(r, c) = gpsCsvData_(row, 4 + (i++));
+    }
+  }
 
   return obs;
 }
@@ -703,15 +753,24 @@ mrpt::obs::CSensoryFrame::Ptr MulranDataset::datasetGetObservations(size_t times
 
   if (publish_lidar_)
   {
-    if (auto o = getPointCloud(timestep); o) sf->insert(o);
+    if (auto o = getPointCloud(timestep); o)
+    {
+      sf->insert(o);
+    }
   }
   if (publish_gps_)
   {
-    if (auto o = getGPS(timestep); o) sf->insert(o);
+    if (auto o = getGPS(timestep); o)
+    {
+      sf->insert(o);
+    }
   }
   if (publish_imu_)
   {
-    if (auto o = getIMU(timestep); o) sf->insert(o);
+    if (auto o = getIMU(timestep); o)
+    {
+      sf->insert(o);
+    }
   }
 
   return sf;
@@ -722,7 +781,9 @@ constexpr size_t MAX_UNLOAD_LEN = 250;
 void MulranDataset::autoUnloadOldEntries() const
 {
   while (read_ahead_lidar_obs_.size() > MAX_UNLOAD_LEN)
+  {
     read_ahead_lidar_obs_.erase(read_ahead_lidar_obs_.begin());
+  }
 }
 
 double MulranDataset::LidarFileNameToTimestamp(const std::string& filename)
