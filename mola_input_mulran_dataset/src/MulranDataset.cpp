@@ -266,10 +266,9 @@ void MulranDataset::initialize_rds(const Yaml& c)
       {
         auto idx = *it;
 
-        lstPointCloudFiles_.erase(
-            std::next(
-                lstPointCloudFiles_.begin(),
-                static_cast<std::vector<std::string>::difference_type>(idx)));
+        lstPointCloudFiles_.erase(std::next(
+            lstPointCloudFiles_.begin(),
+            static_cast<std::vector<std::string>::difference_type>(idx)));
       }
 
       MRPT_LOG_INFO_FMT(
