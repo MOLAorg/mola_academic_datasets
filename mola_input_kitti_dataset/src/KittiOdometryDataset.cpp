@@ -548,7 +548,7 @@ void KittiOdometryDataset::load_lidar(timestep_t step) const
     const size_t nPts = xs.size();
 
     // Based on:
-    // https://github.com/TixiaoShan/LIO-SAM/blob/master/config/doc/kitti2bag/kitti2bag.py
+    // https://github.com/TixiaoShan/LIO-SAM/blob/develop/config/doc/kitti2bag/kitti2bag.py
 
     // (JLBC) Note that this code assumes scan deskew has not been already
     // applied!

@@ -2,7 +2,7 @@ function [proj_y] = reproject_kitti_scan_txt(inputTxtFile)
 D=load(inputTxtFile);
 
 % Based on: 
-% https://github.com/TixiaoShan/LIO-SAM/blob/master/config/doc/kitti2bag/kitti2bag.py
+% https://github.com/TixiaoShan/LIO-SAM/blob/develop/config/doc/kitti2bag/kitti2bag.py
 
 % (JLBC) Note that this code assumes scan deskew has not been already
 % applied!
