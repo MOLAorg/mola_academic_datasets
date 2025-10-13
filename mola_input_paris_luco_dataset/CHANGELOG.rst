@@ -3,8 +3,8 @@ Changelog for package mola_input_paris_luco_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Forthcoming
------------
+2.0.0 (2025-10-13)
+------------------
 * Modernize copyright notice
 * Contributors: Jose Luis Blanco-Claraco
 
