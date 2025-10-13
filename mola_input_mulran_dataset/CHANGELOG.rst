@@ -3,6 +3,16 @@ Changelog for package mola_input_mulran_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+Forthcoming
+-----------
+* Merge pull request `#93 <https://github.com/MOLAorg/mola/issues/93>`_ from MOLAorg/feature/better-lio
+  Changes for new LIO
+* fix clang-format
+* Normalize intensity in published point clouds
+* Fix clang-tidy warnings
+* Modernize copyright notice
+* Contributors: Jose Luis Blanco-Claraco
+
 1.9.1 (2025-07-07)
 ------------------
 

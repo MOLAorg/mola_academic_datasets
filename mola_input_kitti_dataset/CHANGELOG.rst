@@ -2,6 +2,16 @@
 Changelog for package mola_input_kitti_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#93 <https://github.com/MOLAorg/mola/issues/93>`_ from MOLAorg/feature/better-lio
+  Changes for new LIO
+* Merge branch 'develop' into feature/better-lio
+* Update docs
+* Add new module to replay LiDAR datasets from a directory with .bin files
+* Modernize copyright notice
+* Contributors: Jose Luis Blanco-Claraco
+
 1.9.1 (2025-07-07)
 ------------------
 

@@ -2,6 +2,11 @@
 Changelog for package mola_input_euroc_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Modernize copyright notice
+* Contributors: Jose Luis Blanco-Claraco
+
 1.9.1 (2025-07-07)
 ------------------
 
