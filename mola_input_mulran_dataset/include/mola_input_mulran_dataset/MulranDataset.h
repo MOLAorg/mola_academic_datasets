@@ -91,6 +91,12 @@ class MulranDataset : public RawDataSourceBase, public OfflineDatasetSource, pub
   MulranDataset();
   ~MulranDataset() override = default;
 
+  // Prevent copying and moving
+  MulranDataset(const MulranDataset&)            = delete;
+  MulranDataset& operator=(const MulranDataset&) = delete;
+  MulranDataset(MulranDataset&&)                 = delete;
+  MulranDataset& operator=(MulranDataset&&)      = delete;
+
   static constexpr double HDOP_REFERENCE_METERS = 4.5;
 
   // See docs in base class
@@ -157,10 +163,11 @@ class MulranDataset : public RawDataSourceBase, public OfflineDatasetSource, pub
   std::string sequence_;  //!< "00", "01", ...
   bool        lidar_to_ground_truth_1to1_ = true;
 
-  bool publish_lidar_        = true;
-  bool publish_gps_          = true;
-  bool publish_imu_          = true;
-  bool publish_ground_truth_ = true;
+  bool  publish_lidar_                       = true;
+  bool  publish_gps_                         = true;
+  bool  publish_imu_                         = true;
+  bool  publish_ground_truth_                = true;
+  float normalize_intensity_channel_maximum_ = 2500.0f;
 
   std::optional<mrpt::Clock::time_point> last_play_wallclock_time_;
   double                                 last_dataset_time_ = 0;

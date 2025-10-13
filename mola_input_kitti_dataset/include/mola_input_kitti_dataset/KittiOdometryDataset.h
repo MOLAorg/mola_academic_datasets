@@ -101,6 +101,12 @@ class KittiOdometryDataset : public RawDataSourceBase,
   KittiOdometryDataset();
   ~KittiOdometryDataset() override = default;
 
+  // Prevent copying and moving
+  KittiOdometryDataset(const KittiOdometryDataset&)            = delete;
+  KittiOdometryDataset& operator=(const KittiOdometryDataset&) = delete;
+  KittiOdometryDataset(KittiOdometryDataset&&)                 = delete;
+  KittiOdometryDataset& operator=(KittiOdometryDataset&&)      = delete;
+
   // See docs in base class
   void         spinOnce() override;
   bool         hasGroundTruthTrajectory() const override { return !groundTruthTrajectory_.empty(); }
