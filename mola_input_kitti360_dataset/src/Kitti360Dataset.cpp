@@ -38,6 +38,7 @@
 #include <mrpt/obs/CObservationRotatingScan.h>
 #include <mrpt/system/CDirectoryExplorer.h>
 #include <mrpt/system/filesystem.h>  //ASSERT_DIRECTORY_EXISTS_()
+#include <mrpt/version.h>
 
 #include <Eigen/Dense>
 #include <regex>
@@ -170,15 +171,17 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
         {'2', "2013_05_28_drive_0004_sync"},
         {'3', "2013_05_28_drive_0002_sync"},
     };
-    const std::string syncDir = syncDirs.at(sequence_.back());
+    const std::string& syncDir = syncDirs.at(sequence_.back());
 
     lidar_dir = mrpt::system::pathJoin(
         {base_dir_, "data_3d_test_slam", sequence_, syncDir, "velodyne_points"});
     MRPT_LOG_DEBUG_STREAM("Expected LIDAR dir: " << lidar_dir);
 
     for (int i = 0; i < 4; i++)
+    {
       images_dirs[i] = mrpt::system::pathJoin(
           {base_dir_, "data_2d_test_slam", sequence_, syncDir, mrpt::format("image_%02i", i)});
+    }
   }
   else
   {
@@ -200,10 +203,18 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
   }
 
   // clear if does not exist:
-  if (!mrpt::system::directoryExists(lidar_dir)) lidar_dir.clear();
+  if (!mrpt::system::directoryExists(lidar_dir))
+  {
+    lidar_dir.clear();
+  }
 
   for (auto& imDir : images_dirs)
-    if (!mrpt::system::directoryExists(imDir)) imDir.clear();
+  {
+    if (!mrpt::system::directoryExists(imDir))
+    {
+      imDir.clear();
+    }
+  }
 
   if (!mrpt::system::fileExists(gt_file))
   {
@@ -220,8 +231,10 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
   YAML_LOAD_MEMBER_OPT(publish_ground_truth, bool);
 
   for (unsigned int i = 0; i < 4; i++)
+  {
     publish_image_[i] =
         cfg.getOrDefault<bool>(mrpt::format("publish_image_%u", i), publish_image_[i]);
+  }
 
   // Make list of all existing files and preload everything we may need later
   // to quickly replay the dataset in realtime:
@@ -237,7 +250,10 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
 
   lst_velodyne_basedir_ = mrpt::system::pathJoin({lidar_dir, "data"});
   build_list_files(lst_velodyne_basedir_, "bin", lst_velodyne_);
-  if (!lst_velodyne_.empty()) ASSERT_EQUAL_(lst_velodyne_.size(), nLidarStamps);
+  if (!lst_velodyne_.empty())
+  {
+    ASSERT_EQUAL_(lst_velodyne_.size(), nLidarStamps);
+  }
 
   MRPT_LOG_INFO_STREAM(
       "Velodyne pointclouds: "
@@ -248,7 +264,10 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
   {
     lst_image_basedir_[i] = mrpt::system::pathJoin({images_dirs[i], "data_rect"});
     build_list_files(lst_image_basedir_[i], "png", lst_image_[i]);
-    if (!lst_image_[i].empty()) ASSERT_EQUAL_(lst_image_[i].size(), nLidarStamps);
+    if (!lst_image_[i].empty())
+    {
+      ASSERT_EQUAL_(lst_image_[i].size(), nLidarStamps);
+    }
 
     MRPT_LOG_INFO_STREAM(
         "Camera channel `image_" << i << "`: "
@@ -257,7 +276,10 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
                                          : "Not found"));
 
     // Override user choice if not possible to publish images:
-    if (lst_image_[i].empty()) publish_image_[i] = false;
+    if (lst_image_[i].empty())
+    {
+      publish_image_[i] = false;
+    }
   }
 
   // Load sensors calibration:
@@ -308,8 +330,8 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
     cam_intrinsics_[i].setIntrinsicParamsFromValues(fx, fy, cx, cy);
 
     // Resolution:
-    cam_intrinsics_[i].ncols = S01[i][0];
-    cam_intrinsics_[i].nrows = S01[i][1];
+    cam_intrinsics_[i].ncols = static_cast<uint32_t>(S01[i][0]);
+    cam_intrinsics_[i].nrows = static_cast<uint32_t>(S01[i][1]);
   }
 
   // Velodyne pose wrt vehicle =
@@ -365,7 +387,12 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
       const size_t idx = mrpt::round(M(i, 0));
 
       for (int row = 0, ij_idx = 1 + 0; row < 3; row++)
-        for (int col = 0; col < 4; col++, ij_idx++) m(row, col) = M(i, ij_idx);
+      {
+        for (int col = 0; col < 4; col++, ij_idx++)
+        {
+          m(row, col) = M(i, ij_idx);
+        }
+      }
 
       // ground truth is for GPS/IMU:
       const auto gtIMU = mrpt::poses::CPose3D::FromHomogeneousMatrix(m);
@@ -396,7 +423,10 @@ void Kitti360Dataset::spinOnce()
   const auto tNow = mrpt::Clock::now();
 
   // Starting time:
-  if (!last_play_wallclock_time_) last_play_wallclock_time_ = tNow;
+  if (!last_play_wallclock_time_)
+  {
+    last_play_wallclock_time_ = tNow;
+  }
 
   // get current replay time:
   auto         lckUIVars       = mrpt::lockHelper(dataset_ui_mtx_);
@@ -417,7 +447,10 @@ void Kitti360Dataset::spinOnce()
   }
   else
   {
-    if (paused) return;
+    if (paused)
+    {
+      return;
+    }
     // move forward replayed dataset time:
     last_dataset_time_ += dt;
   }
@@ -430,7 +463,8 @@ void Kitti360Dataset::spinOnce()
         10.0, "End of dataset reached! Nothing else to publish (CTRL+C to quit)");
     return;
   }
-  else if (!lstLidarTimestamps_.empty())
+
+  if (!lstLidarTimestamps_.empty())
   {
     MRPT_LOG_THROTTLE_INFO_FMT(
         5.0, "Dataset replay progress: %lu / %lu  (%4.02f%%)",
@@ -464,7 +498,10 @@ void Kitti360Dataset::spinOnce()
 
     for (unsigned int i = 0; i < 4; i++)
     {
-      if (!publish_image_[i]) continue;
+      if (!publish_image_[i])
+      {
+        continue;
+      }
       ProfilerEntry tle(profiler_, "spinOnce.publishImage");
       load_img(i, replay_next_tim_index_);
       auto o = read_ahead_image_obs_[replay_next_tim_index_][i];
@@ -509,13 +546,19 @@ void Kitti360Dataset::spinOnce()
     {
       for (unsigned int i = 0; i < 4; i++)
       {
-        if (!publish_image_[i]) continue;
+        if (!publish_image_[i])
+        {
+          continue;
+        }
         load_img(i, replay_next_tim_index_);
       }
     }
     if (0 == read_ahead_lidar_obs_.count(replay_next_tim_index_))
     {
-      if (publish_lidar_) load_lidar(replay_next_tim_index_);
+      if (publish_lidar_)
+      {
+        load_lidar(replay_next_tim_index_);
+      }
     }
   }
 
@@ -530,7 +573,10 @@ void Kitti360Dataset::load_img(const unsigned int cam_idx, const timestep_t step
   autoUnloadOldEntries();
 
   // Already loaded?
-  if (read_ahead_image_obs_[step][cam_idx]) return;
+  if (read_ahead_image_obs_[step][cam_idx])
+  {
+    return;
+  }
 
   ProfilerEntry tleg(profiler_, "load_img");
 
@@ -566,7 +612,10 @@ void Kitti360Dataset::load_lidar(timestep_t step) const
   autoUnloadOldEntries();
 
   // Already loaded?
-  if (read_ahead_lidar_obs_[step]) return;
+  if (read_ahead_lidar_obs_[step])
+  {
+    return;
+  }
 
   ProfilerEntry tleg(profiler_, "load_lidar");
 
@@ -623,7 +672,12 @@ void Kitti360Dataset::load_lidar(timestep_t step) const
     auto newPts = mrpt::maps::CPointsMapXYZIRT::Create();
     newPts->reserve_XYZIRT(xs.size(), true /*I*/, false /*R*/, true /*T*/);
 
+#if MRPT_VERSION >= 0x020f00  // 2.15.0
+    auto* trgTs =
+        newPts->getPointsBufferRef_float_field(mrpt::maps::CPointsMapXYZIRT::POINT_FIELD_TIMESTAMP);
+#else
     auto* trgTs = newPts->getPointsBufferRef_timestamp();
+#endif
     ASSERT_(trgTs);
 
     for (size_t i = 0; i < xs.size(); i++)
@@ -697,7 +751,10 @@ mrpt::obs::CSensoryFrame::Ptr Kitti360Dataset::datasetGetObservations(size_t tim
 
   for (size_t i = 0; i < publish_image_.size(); i++)
   {
-    if (!publish_image_[i]) continue;
+    if (!publish_image_[i])
+    {
+      continue;
+    }
     sf->insert(getImage(i, timestep));
   }
 
@@ -709,13 +766,20 @@ mrpt::obs::CSensoryFrame::Ptr Kitti360Dataset::datasetGetObservations(size_t tim
   return sf;
 }
 
+namespace
+{
 constexpr size_t MAX_UNLOAD_LEN = 250;
+}
 
 void Kitti360Dataset::autoUnloadOldEntries() const
 {
   while (read_ahead_lidar_obs_.size() > MAX_UNLOAD_LEN)
+  {
     read_ahead_lidar_obs_.erase(read_ahead_lidar_obs_.begin());
+  }
 
   while (read_ahead_image_obs_.size() > MAX_UNLOAD_LEN)
+  {
     read_ahead_image_obs_.erase(read_ahead_image_obs_.begin());
+  }
 }

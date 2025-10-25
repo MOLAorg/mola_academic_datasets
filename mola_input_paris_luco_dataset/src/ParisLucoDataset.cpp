@@ -34,6 +34,7 @@
 #include <mrpt/obs/CObservationRotatingScan.h>
 #include <mrpt/system/CDirectoryExplorer.h>
 #include <mrpt/system/filesystem.h>  //ASSERT_DIRECTORY_EXISTS_()
+#include <mrpt/version.h>
 
 #include <Eigen/Dense>
 
@@ -137,7 +138,10 @@ void ParisLucoDataset::spinOnce()
 
   const auto tNow = mrpt::Clock::now();
 
-  if (!last_play_wallclock_time_) last_play_wallclock_time_ = tNow;
+  if (!last_play_wallclock_time_)
+  {
+    last_play_wallclock_time_ = tNow;
+  }
 
   // get current replay time:
   auto         lckUIVars       = mrpt::lockHelper(dataset_ui_mtx_);
@@ -158,7 +162,10 @@ void ParisLucoDataset::spinOnce()
   }
   else
   {
-    if (paused) return;
+    if (paused)
+    {
+      return;
+    }
     // move forward replayed dataset time:
     last_dataset_time_ += dt;
   }
@@ -171,7 +178,8 @@ void ParisLucoDataset::spinOnce()
         10.0, "End of dataset reached! Nothing else to publish (CTRL+C to quit)");
     return;
   }
-  else if (!lst_timestamps_.empty())
+
+  if (!lst_timestamps_.empty())
   {
     MRPT_LOG_THROTTLE_INFO_FMT(
         5.0, "Dataset replay progress: %lu / %lu  (%4.02f%%)",
@@ -189,7 +197,7 @@ void ParisLucoDataset::spinOnce()
         << mrpt::system::formatTimeInterval(last_dataset_time_));
 
     // Save one single timestamp for all observations, since they are in
-    // theory shynchronized in the Kitti datasets:
+    // theory synchronized in the Kitti datasets:
     const auto obs_tim = mrpt::Clock::fromDouble(lst_timestamps_[replay_next_tim_index_]);
 
     {
@@ -242,7 +250,10 @@ void ParisLucoDataset::load_lidar(timestep_t step) const
   autoUnloadOldEntries();
 
   // Already loaded?
-  if (read_ahead_lidar_obs_[step]) return;
+  if (read_ahead_lidar_obs_[step])
+  {
+    return;
+  }
 
   ProfilerEntry tleg(profiler_, "load_lidar");
 
@@ -253,25 +264,33 @@ void ParisLucoDataset::load_lidar(timestep_t step) const
 
   bool ok = pts->loadFromPlyFile(f);
   if (!ok)
+  {
     THROW_EXCEPTION_FMT(
         "Error reading scan PLY file '%s': %s", f.c_str(), pts->getLoadPLYErrorString().c_str());
+  }
 
   auto obs         = mrpt::obs::CObservationPointCloud::Create();
   obs->sensorLabel = "lidar";
   obs->pointcloud  = pts;
 
+#if MRPT_VERSION >= 0x020f00  // 2.15.0
+  auto* Ts =
+      pts->getPointsBufferRef_float_field(mrpt::maps::CPointsMapXYZIRT::POINT_FIELD_TIMESTAMP);
+  auto* Rs = pts->getPointsBufferRef_uint_field(mrpt::maps::CPointsMapXYZIRT::POINT_FIELD_RING_ID);
+#else
   auto* Ts = pts->getPointsBufferRef_timestamp();
+  auto* Rs = pts->getPointsBufferRef_ring();
+#endif
   ASSERT_(Ts);
   const float earliestTime = *std::min_element(Ts->cbegin(), Ts->cend());
-  const float shiftTime    = -earliestTime - 0.5 * lidarPeriod_;
+  const float shiftTime    = -earliestTime - 0.5f * static_cast<float>(lidarPeriod_);
 
   std::transform(Ts->cbegin(), Ts->cend(), Ts->begin(), [=](double t) { return t + shiftTime; });
 
   // Fix missing RING_ID: ParisLuco does not have a RING_ID field,
   // but we can generate it from the timestamps + pitch angle:
   ASSERT_(pts->hasRingField());
-  ASSERT_EQUAL_(
-      pts->getPointsBufferRef_ring()->size(), pts->getPointsBufferRef_timestamp()->size());
+  ASSERT_EQUAL_(Rs->size(), Ts->size());
   std::map<int /*ring*/, std::map<float /*time*/, size_t /*index*/>> histogram;
 
   // Equivalent matlab code:
@@ -290,7 +309,10 @@ void ParisLucoDataset::load_lidar(timestep_t step) const
   for (size_t i = 0; i < nPts; i++)
   {
     const float depth = sqrt(mrpt::square(xs[i]) + mrpt::square(ys[i]));
-    if (depth < 0.05) continue;
+    if (depth < 0.05)
+    {
+      continue;
+    }
     const float pitch = asin(zs[i] / depth);
 
     int iP = mrpt::round(31 * (pitch + fov_down) / fov);
@@ -300,9 +322,13 @@ void ParisLucoDataset::load_lidar(timestep_t step) const
     vec[(*Ts)[i]] = i;
   }
 
-  auto& Rs = *pts->getPointsBufferRef_ring();
   for (const auto& [ringId, vec] : histogram)
-    for (const auto& [time, idx] : vec) Rs[idx] = ringId;
+  {
+    for (const auto& [time, idx] : vec)
+    {
+      (*Rs)[idx] = ringId;
+    }
+  }
 
   // Lidar is at the origin of the vehicle frame:
   obs->sensorPose = mrpt::poses::CPose3D();
@@ -322,10 +348,16 @@ void ParisLucoDataset::load_lidar(timestep_t step) const
 
 void ParisLucoDataset::readAheadSome()
 {
-  if (replay_next_tim_index_ >= lstLidarFiles_.size()) return;
+  if (replay_next_tim_index_ >= lstLidarFiles_.size())
+  {
+    return;
+  }
 
   ProfilerEntry tle(profiler_, "spinOnce.read_ahead");
-  if (0 == read_ahead_lidar_obs_.count(replay_next_tim_index_)) load_lidar(replay_next_tim_index_);
+  if (0 == read_ahead_lidar_obs_.count(replay_next_tim_index_))
+  {
+    load_lidar(replay_next_tim_index_);
+  }
 }
 
 size_t ParisLucoDataset::datasetSize() const
@@ -357,5 +389,7 @@ constexpr size_t MAX_UNLOAD_LEN = 250;
 void ParisLucoDataset::autoUnloadOldEntries() const
 {
   while (read_ahead_lidar_obs_.size() > MAX_UNLOAD_LEN)
+  {
     read_ahead_lidar_obs_.erase(read_ahead_lidar_obs_.begin());
+  }
 }

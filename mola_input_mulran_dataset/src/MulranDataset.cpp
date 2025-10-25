@@ -36,6 +36,7 @@
 #include <mrpt/obs/gnss_messages_ascii_nmea.h>
 #include <mrpt/system/CDirectoryExplorer.h>
 #include <mrpt/system/filesystem.h>  //ASSERT_DIRECTORY_EXISTS_()
+#include <mrpt/version.h>
 
 #include <Eigen/Dense>
 
@@ -266,9 +267,10 @@ void MulranDataset::initialize_rds(const Yaml& c)
       {
         auto idx = *it;
 
-        lstPointCloudFiles_.erase(std::next(
-            lstPointCloudFiles_.begin(),
-            static_cast<std::vector<std::string>::difference_type>(idx)));
+        lstPointCloudFiles_.erase(
+            std::next(
+                lstPointCloudFiles_.begin(),
+                static_cast<std::vector<std::string>::difference_type>(idx)));
       }
 
       MRPT_LOG_INFO_FMT(
@@ -508,7 +510,12 @@ void MulranDataset::load_lidar(timestep_t step) const
     ASSERTMSG_(loadOk, mrpt::format("Error loading kitti scan file: '%s'", f.c_str()));
 
     // Normalize intensity data so it's maximum 1.0
+#if MRPT_VERSION >= 0x020f00  // 2.15.0
+    auto* Is = kittiData.getPointsBufferRef_float_field(
+        mrpt::maps::CPointsMapXYZIRT::POINT_FIELD_INTENSITY);
+#else
     auto* Is = kittiData.getPointsBufferRef_intensity();
+#endif
     ASSERT_(Is && !Is->empty());
     const float max_intensity_inv = 1.0f / normalize_intensity_channel_maximum_;
     for (float& intensity : *Is)
