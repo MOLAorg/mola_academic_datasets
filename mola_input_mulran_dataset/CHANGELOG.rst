@@ -3,8 +3,8 @@ Changelog for package mola_input_mulran_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Forthcoming
------------
+2.2.0 (2025-10-28)
+------------------
 * format
 * Upgrade to use the upcoming MRPT 2.15 API for CGenericsPointsMap
 * Contributors: Jose Luis Blanco-Claraco
