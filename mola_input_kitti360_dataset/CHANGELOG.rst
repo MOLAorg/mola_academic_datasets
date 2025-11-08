@@ -2,6 +2,9 @@
 Changelog for package mola_input_kitti_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.2.0 (2025-10-28)
 ------------------
 * Use new mrpt 2.15.0 fast insertion
