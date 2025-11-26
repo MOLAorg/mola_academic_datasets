@@ -683,7 +683,9 @@ void Kitti360Dataset::load_lidar(timestep_t step) const
 
     for (size_t i = 0; i < xs.size(); i++)
     {
-#if MRPT_VERSION >= 0x020f00  // 2.15.0
+#if MRPT_VERSION >= 0x020f03  // 2.15.3
+      newPts->insertPointFrom(i, ctx);
+#elif MRPT_VERSION >= 0x020f00  // 2.15.0
       newPts->insertPointFrom(*obs->pointcloud, i, ctx);
 #else
       newPts->insertPointFrom(*obs->pointcloud, i);
