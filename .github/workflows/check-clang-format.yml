@@ -1,0 +1,49 @@
+name: CI clang-format
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Safe to run on all PRs (including forks): uses ubuntu-latest only,
+# no secrets, no self-hosted runners.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Github Actions requires a single row to be added to the build matrix.
+        # See https://help.github.com/en/articles/workflow-syntax-for-github-actions.
+        name: [
+          clang-format-check
+        ]
+
+        include:
+          - name: clang-format-check
+            os: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Git submodule
+        run: |
+          git submodule sync
+          git submodule update --init --recursive
+
+      - name: Install Dependencies
+        run: |
+          sudo apt install clang-format-14 -yq
+          pip3 install --user -r .github/python_clang_format_reqs.txt
+
+      - name: Check code style
+        run: |
+          echo "TASK=lint_all" >> $GITHUB_ENV
+          bash .github/check_style.sh
