@@ -3,8 +3,8 @@ Changelog for package mola_input_paris_luco_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Forthcoming
------------
+3.0.0 (2026-05-12)
+------------------
 * Merge pull request `#143 <https://github.com/MOLAorg/mola_academic_datasets/issues/143>`_ from MOLAorg/bump-cmake-version
   bump min req cmake version to 3.22
 * bump min req cmake version to 3.22

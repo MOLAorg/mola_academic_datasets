@@ -2,8 +2,8 @@
 Changelog for package mola_academic_datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2026-05-12)
+------------------
 * Add mola_academic_datasets metapackage
 * Contributors: Jose Luis Blanco-Claraco
 
