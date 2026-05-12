@@ -3,6 +3,13 @@ Changelog for package kitti_metrics_eval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+Forthcoming
+-----------
+* Merge pull request `#143 <https://github.com/MOLAorg/mola_academic_datasets/issues/143>`_ from MOLAorg/bump-cmake-version
+  bump min req cmake version to 3.22
+* bump min req cmake version to 3.22
+* Contributors: Jose Luis Blanco-Claraco
+
 2.8.0 (2026-04-29)
 ------------------
 
