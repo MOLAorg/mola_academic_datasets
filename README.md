@@ -87,7 +87,7 @@ cmake --build build
 ## Dependencies
 
 - [MOLA core](https://github.com/MOLAorg/mola) (`mola_kernel`, `mola_yaml`, etc.)
-- [MRPT](https://github.com/MRPT/mrpt) ≥ 2.1.0
+- [MRPT](https://github.com/MRPT/mrpt) ≥ 2.15.0
 - ROS 2 Humble / Jazzy / Rolling (optional, for ROS 2 integration)
 
 ## Individual package build status
