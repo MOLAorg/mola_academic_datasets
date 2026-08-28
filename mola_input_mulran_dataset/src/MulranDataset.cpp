@@ -458,6 +458,7 @@ void MulranDataset::spinOnce()
   {
     auto lck             = mrpt::lockHelper(dataset_ui_mtx_);
     last_used_tim_index_ = std::distance(datasetEntries_.begin(), replay_next_it_);
+    ui_dataset_time_     = last_dataset_time_;
   }
 
   // Read ahead to save delays in the next iteration:

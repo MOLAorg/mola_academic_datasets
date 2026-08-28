@@ -447,7 +447,9 @@ void Kitti360Dataset::spinOnce()
   if (teleport_here.has_value() && *teleport_here < lstLidarTimestamps_.size())
   {
     replay_next_tim_index_ = *teleport_here;
-    last_dataset_time_     = lstLidarTimestamps_[replay_next_tim_index_];
+    // Elapsed seconds since the first scan, the same units used below to
+    // decide what to publish (timestamps here are absolute):
+    last_dataset_time_ = lstLidarTimestamps_[replay_next_tim_index_] - lstLidarTimestamps_.front();
   }
   else
   {
@@ -540,6 +542,7 @@ void Kitti360Dataset::spinOnce()
   {
     auto lck             = mrpt::lockHelper(dataset_ui_mtx_);
     last_used_tim_index_ = replay_next_tim_index_ > 0 ? replay_next_tim_index_ - 1 : 0;
+    ui_dataset_time_     = last_dataset_time_;
   }
 
   // Read ahead to save delays in the next iteration:

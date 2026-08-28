@@ -187,6 +187,21 @@ class Kitti360Dataset : public RawDataSourceBase, public OfflineDatasetSource, p
     auto lck       = mrpt::lockHelper(dataset_ui_mtx_);
     teleport_here_ = timestep;
   }
+#if defined(MOLA_KERNEL_DATASET_UI_HAS_TIME)
+  std::optional<double> datasetUI_time() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return ui_dataset_time_;
+  }
+  std::optional<double> datasetUI_total_time() const override
+  {
+    if (lstLidarTimestamps_.size() < 2)
+    {
+      return {};
+    }
+    return lstLidarTimestamps_.back() - lstLidarTimestamps_.front();
+  }
+#endif
 
   /** See:
    *  "IMLS-SLAM: scan-to-model matching based on 3D data", JE Deschaud, 2018.
@@ -212,6 +227,9 @@ class Kitti360Dataset : public RawDataSourceBase, public OfflineDatasetSource, p
 
   std::optional<mrpt::Clock::time_point> last_play_wallclock_time_;
   double                                 last_dataset_time_ = 0;
+
+  /// Copy of last_dataset_time_ for the GUI, guarded by dataset_ui_mtx_.
+  double ui_dataset_time_ = 0;
 
   std::array<std::vector<std::string>, 4> lst_image_;
   std::array<std::string, 4>              lst_image_basedir_;
