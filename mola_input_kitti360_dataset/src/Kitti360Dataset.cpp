@@ -447,7 +447,9 @@ void Kitti360Dataset::spinOnce()
   if (teleport_here.has_value() && *teleport_here < lstLidarTimestamps_.size())
   {
     replay_next_tim_index_ = *teleport_here;
-    last_dataset_time_     = lstLidarTimestamps_[replay_next_tim_index_];
+    // Elapsed seconds since the first scan, the same units used below to
+    // decide what to publish (timestamps here are absolute):
+    last_dataset_time_ = lstLidarTimestamps_[replay_next_tim_index_] - lstLidarTimestamps_.front();
   }
   else
   {
