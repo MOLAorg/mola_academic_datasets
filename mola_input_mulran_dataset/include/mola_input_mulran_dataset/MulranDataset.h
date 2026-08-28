@@ -142,6 +142,21 @@ class MulranDataset : public RawDataSourceBase, public OfflineDatasetSource, pub
     auto lck       = mrpt::lockHelper(dataset_ui_mtx_);
     teleport_here_ = timestep;
   }
+#if defined(MOLA_KERNEL_DATASET_UI_HAS_TIME)
+  std::optional<double> datasetUI_time() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return ui_dataset_time_;
+  }
+  std::optional<double> datasetUI_total_time() const override
+  {
+    if (datasetEntries_.size() < 2)
+    {
+      return {};
+    }
+    return datasetEntries_.rbegin()->first - datasetEntries_.begin()->first;
+  }
+#endif
 
  protected:
   // See docs in base class
@@ -161,6 +176,9 @@ class MulranDataset : public RawDataSourceBase, public OfflineDatasetSource, pub
 
   std::optional<mrpt::Clock::time_point> last_play_wallclock_time_;
   double                                 last_dataset_time_ = 0;
+
+  /// Copy of last_dataset_time_ for the GUI, guarded by dataset_ui_mtx_.
+  double ui_dataset_time_ = 0;
 
   enum class EntryType : uint8_t
   {

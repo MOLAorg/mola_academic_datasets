@@ -98,6 +98,21 @@ class EurocDataset : public RawDataSourceBase, public Dataset_UI
     auto lck       = mrpt::lockHelper(dataset_ui_mtx_);
     teleport_here_ = timestep;
   }
+#if defined(MOLA_KERNEL_DATASET_UI_HAS_TIME)
+  std::optional<double> datasetUI_time() const override
+  {
+    auto lck = mrpt::lockHelper(dataset_ui_mtx_);
+    return ui_dataset_time_;
+  }
+  std::optional<double> datasetUI_total_time() const override
+  {
+    if (dataset_.size() < 2)
+    {
+      return {};
+    }
+    return 1e-9 * static_cast<double>(dataset_.rbegin()->first - dataset_.begin()->first);
+  }
+#endif
 
  protected:
   // See docs in base class
@@ -114,6 +129,9 @@ class EurocDataset : public RawDataSourceBase, public Dataset_UI
 
   std::optional<mrpt::Clock::time_point> last_play_wallclock_time_;
   double                                 last_dataset_time_ = 0;
+
+  /// Copy of last_dataset_time_ for the GUI, guarded by dataset_ui_mtx_.
+  double ui_dataset_time_ = 0;
 
   // double              replay_time_{.0};
   std::string seq_dir_;

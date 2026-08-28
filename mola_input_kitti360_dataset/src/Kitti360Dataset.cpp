@@ -540,6 +540,7 @@ void Kitti360Dataset::spinOnce()
   {
     auto lck             = mrpt::lockHelper(dataset_ui_mtx_);
     last_used_tim_index_ = replay_next_tim_index_ > 0 ? replay_next_tim_index_ - 1 : 0;
+    ui_dataset_time_     = last_dataset_time_;
   }
 
   // Read ahead to save delays in the next iteration:
