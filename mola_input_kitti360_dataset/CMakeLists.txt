@@ -17,9 +17,10 @@ project(mola_input_kitti360_dataset LANGUAGES CXX)
 find_package(mola_common REQUIRED)
 
 # find dependencies:
-find_package(mrpt-math) # for MRPT Eigen utilities
-find_package(mrpt-maps)
+find_package(mrpt_math REQUIRED) # for MRPT Eigen utilities
+find_package(mrpt_maps REQUIRED)
 
+find_package(Eigen3 REQUIRED NO_MODULE)
 find_mola_package(mola_kernel)
 
 # -----------------------
@@ -33,8 +34,9 @@ mola_add_library(
   PUBLIC_LINK_LIBRARIES
     mola::mola_kernel
   PRIVATE_LINK_LIBRARIES
-    mrpt::maps
-    mrpt::math
+    mrpt::mrpt_maps
+    mrpt::mrpt_math
+    Eigen3::Eigen
   CMAKE_DEPENDENCIES
     mola_kernel
 )

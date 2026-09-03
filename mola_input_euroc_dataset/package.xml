@@ -15,10 +15,9 @@
 
 
   <depend>mola_common</depend>
-  <depend>mola_kernel</depend>
 
-  <depend>mrpt_libobs</depend>
-  <depend>mrpt_libmath</depend>
+
+  <build_depend>eigen</build_depend>
 
   <doc_depend>doxygen</doc_depend>
 

@@ -16,11 +16,12 @@ project(mola_input_euroc_dataset LANGUAGES CXX)
 # MOLA CMake scripts: "mola_xxx()"
 find_package(mola_common REQUIRED)
 
+find_package(Eigen3 REQUIRED NO_MODULE)
 find_mola_package(mola_kernel)
 
 # find dependencies:
-find_package(mrpt-obs)
-find_package(mrpt-math)  # for MRPT Eigen utilities
+find_package(mrpt_obs REQUIRED)
+find_package(mrpt_math REQUIRED)  # for MRPT Eigen utilities
 
 # -----------------------
 # define lib:
@@ -32,10 +33,11 @@ mola_add_library(
   SOURCES ${LIB_SRCS} ${LIB_PUBLIC_HDRS}
   PRIVATE_LINK_LIBRARIES
     mola::mola_kernel
-    mrpt::obs
-    mrpt::math
+    mrpt::mrpt_obs
+    mrpt::mrpt_math
+    Eigen3::Eigen
   CMAKE_DEPENDENCIES
     mola_kernel
-    mrpt-obs
-    mrpt-math
+    mrpt_obs
+    mrpt_math
 )
