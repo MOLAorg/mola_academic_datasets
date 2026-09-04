@@ -15,7 +15,9 @@
 
 
   <depend>mola_common</depend>
-
+  <depend>mola_kernel</depend>
+  <depend>mrpt_math</depend>
+  <depend>mrpt_obs</depend>
 
   <build_depend>eigen</build_depend>
 

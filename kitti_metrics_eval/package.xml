@@ -15,6 +15,9 @@
 
 
   <depend>mola_common</depend>
+  <depend>mrpt_math</depend>
+  <depend>mrpt_poses</depend>
+  <depend>cli11</depend>
 
   <build_depend>eigen</build_depend>
 
