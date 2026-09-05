@@ -25,6 +25,7 @@
 #include <mola_input_paris_luco_dataset/ParisLucoDataset.h>
 #include <mola_yaml/yaml_helpers.h>
 #include <mrpt/containers/yaml.h>
+#include <mrpt/core/get_env.h>
 #include <mrpt/core/initializer.h>
 #include <mrpt/core/round.h>
 #include <mrpt/maps/CGenericPointsMap.h>
@@ -89,6 +90,22 @@ void ParisLucoDataset::initialize_rds(const Yaml& c)
 
   YAML_LOAD_MEMBER_OPT(time_warp_scale, double);
   paused_ = cfg.getOrDefault<bool>("start_paused", paused_);
+
+  publish_ground_truth_ = cfg.getOrDefault<bool>("publish_ground_truth", publish_ground_truth_);
+
+  // Kill switch, independent of any YAML: MOLA_PUBLISH_GROUND_TRUTH=false
+  // guarantees the reference trajectory is not published as an observation, so
+  // no consumer in the system can fuse it by accident. State estimators do
+  // filter it out by label, but a launch file cannot be audited from here and
+  // a benchmark run silently fed its own ground truth is not recoverable after
+  // the fact. It can only DISABLE publication, never enable it.
+  if (publish_ground_truth_ && !mrpt::get_env<bool>("MOLA_PUBLISH_GROUND_TRUTH", true))
+  {
+    publish_ground_truth_ = false;
+    MRPT_LOG_WARN(
+        "MOLA_PUBLISH_GROUND_TRUTH=false: the reference trajectory will NOT be published as an "
+        "observation. It is still available offline via datasetGetGroundTruthTrajectory().");
+  }
 
   // Make list of all existing files and preload everything we may need later
   // to quickly replay the dataset in realtime:
@@ -213,7 +230,7 @@ void ParisLucoDataset::spinOnce()
       this->sendObservationsToFrontEnds(o);
     }
 
-    if (groundTruthTrajectory_.size() > replay_next_tim_index_)
+    if (publish_ground_truth_ && groundTruthTrajectory_.size() > replay_next_tim_index_)
     {
       // Get GT pose: it's already stored and correctly transformed
       // into groundTruthTrajectory_:
