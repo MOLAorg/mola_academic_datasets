@@ -26,6 +26,7 @@
 #include <mola_input_kitti360_dataset/Kitti360Dataset.h>
 #include <mola_yaml/yaml_helpers.h>
 #include <mrpt/containers/yaml.h>
+#include <mrpt/core/get_env.h>
 #include <mrpt/core/initializer.h>
 #include <mrpt/core/round.h>
 #include <mrpt/io/CTextFileLinesParser.h>
@@ -233,6 +234,20 @@ void Kitti360Dataset::initialize_rds(const Yaml& c)
   YAML_LOAD_MEMBER_OPT(publish_lidar, bool);
   YAML_LOAD_MEMBER_OPT(generate_lidar_timestamps, bool);
   YAML_LOAD_MEMBER_OPT(publish_ground_truth, bool);
+
+  // Kill switch, independent of any YAML: MOLA_PUBLISH_GROUND_TRUTH=false
+  // guarantees the reference trajectory is not published as an observation, so
+  // no consumer in the system can fuse it by accident. State estimators do
+  // filter it out by label, but a launch file cannot be audited from here and
+  // a benchmark run silently fed its own ground truth is not recoverable after
+  // the fact. It can only DISABLE publication, never enable it.
+  if (publish_ground_truth_ && !mrpt::get_env<bool>("MOLA_PUBLISH_GROUND_TRUTH", true))
+  {
+    publish_ground_truth_ = false;
+    MRPT_LOG_WARN(
+        "MOLA_PUBLISH_GROUND_TRUTH=false: the reference trajectory will NOT be published as an "
+        "observation. It is still available offline via datasetGetGroundTruthTrajectory().");
+  }
 
   for (unsigned int i = 0; i < 4; i++)
   {

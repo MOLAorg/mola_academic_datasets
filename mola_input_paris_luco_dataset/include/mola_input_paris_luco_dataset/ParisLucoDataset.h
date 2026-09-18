@@ -143,6 +143,11 @@ class ParisLucoDataset : public RawDataSourceBase, public OfflineDatasetSource, 
   std::string base_dir_;  //!< base dir for "00/*".
   std::string sequence_ = "00";  //!< only "00" in this dataset
 
+  /** Whether to publish the reference trajectory as a "ground_truth"
+   *  CObservationRobotPose. It is still reachable offline via
+   *  datasetGetGroundTruthTrajectory() when off. */
+  bool publish_ground_truth_ = true;
+
   const double lidarPeriod_ = 1.0 / 10.0;  // [s]
 
   timestep_t                             replay_next_tim_index_{0};

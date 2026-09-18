@@ -16,9 +16,11 @@
 
   <depend>mola_common</depend>
   <depend>mola_kernel</depend>
+  <depend>mrpt_math</depend>
+  <depend>mrpt_maps</depend>
+  <depend>mrpt_poses</depend>
 
-  <depend>mrpt_libmaps</depend>
-  <depend>mrpt_libposes</depend>
+  <build_depend>eigen</build_depend>
 
   <doc_depend>doxygen</doc_depend>
 

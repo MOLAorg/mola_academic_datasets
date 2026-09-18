@@ -17,9 +17,10 @@ project(kitti_metrics_eval LANGUAGES CXX)
 find_package(mola_common REQUIRED)
 
 # find dependencies:
-find_package(mrpt-math) # for MRPT Eigen utilities
-find_package(mrpt-poses)
-find_package(mrpt-tclap)
+find_package(mrpt_math REQUIRED) # for MRPT Eigen utilities
+find_package(mrpt_poses REQUIRED)
+find_package(CLI11 REQUIRED)
+find_package(Eigen3 REQUIRED NO_MODULE)
 
 # ----------------------
 # define app target:
@@ -27,9 +28,10 @@ mola_add_executable(
   TARGET  kitti-metrics-eval
   SOURCES apps/kitti-metrics-eval.cpp
   LINK_LIBRARIES
-    mrpt::tclap
-    mrpt::poses
-    mrpt::math
+    CLI11::CLI11
+    mrpt::mrpt_poses
+    mrpt::mrpt_math
+    Eigen3::Eigen
 )
 
 # Silent tons of warnings from kitti-eval original code:

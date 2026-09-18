@@ -28,7 +28,6 @@
  * ###########################################################################
  */
 
-#include <mrpt/3rdparty/tclap/CmdLine.h>
 #include <mrpt/containers/yaml.h>
 #include <mrpt/core/exceptions.h>
 #include <mrpt/math/CMatrixFixed.h>
@@ -37,6 +36,7 @@
 #include <mrpt/system/filesystem.h>
 #include <mrpt/system/string_utils.h>  // tokenize()
 
+#include <CLI/CLI.hpp>
 #include <Eigen/Dense>
 #include <cstdlib>
 #include <fstream>
@@ -46,73 +46,56 @@
 // Declare supported cli switches ===========
 struct Cli
 {
-  TCLAP::CmdLine cmd{"kitti-metrics-eval"};
+  CLI::App cmd{"kitti-metrics-eval"};
 
-  TCLAP::ValueArg<std::string> arg_kitti_basedir{
-      "k",
-      "kitti-basedir",
-      "Path to the kitti datasets. Overrides to the default, which is "
-      "reading "
-      "the env var `KITTI_BASE_DIR`.",
-      false,
-      "",
-      "",
-      cmd};
+  std::string      arg_kitti_basedir;
+  std::string      arg_result_path        = "result.txt";
+  std::string      argSavePathKittiFormat = "result.kitti";
+  std::vector<int> arg_seq;
+  std::string      arg_override_gt_file   = "trajectory_gt.txt";
+  bool             argSkipFigures         = false;
+  bool             argResultInKittiFormat = false;
 
-  TCLAP::ValueArg<std::string> arg_result_path{
-      "r",
-      "result-tum-path",
-      "File to evaluate, in TUM format",
-      true,
-      "result.txt|result_%02i.txt",
-      "result.txt",
-      cmd};
-
-  TCLAP::ValueArg<std::string> argSavePathKittiFormat{
-      "",
-      "save-as-kitti",
-      "If given, will transform the input path from the LIDAR frame to the "
-      "cam0 "
-      "frame and save the path to a TXT file in the format expected by KITTI "
-      "dev "
-      "kit.",
-      false,
-      "result.kitti",
-      "result.kitti",
-      cmd};
-
-  TCLAP::MultiArg<int> arg_seq{
-      "s",
-      "sequence",
-      "The sequence number of the path{s} file{s} to evaluate, used to find "
-      "out "
-      "GT and calibration files for the Kitti dataset.",
-      false,
-      "01",
-      cmd};
-
-  TCLAP::ValueArg<std::string> arg_override_gt_file{
-      "",
-      "gt-tum-path",
-      "If provided, the --sequence flag will be ignored and this particular "
-      "file "
-      "in TUM format will be read and used as ground truth to compare "
-      "against "
-      "the resulting odometry path.",
-      false,
-      "trajectory_gt.txt",
-      "trajectory_gt.txt",
-      cmd};
-
-  TCLAP::SwitchArg argSkipFigures{"", "no-figures", "Skip generating the error figures", cmd};
-
-  TCLAP::SwitchArg argResultInKittiFormat{
-      "", "result-in-kitti-format",
-      "Use to read solution trajectory files in KITTI (4*3 elements per row) "
-      "format instead of in TUM format",
-      cmd};
+  CLI::Option* optKittiBasedir;
+  CLI::Option* optSavePathKittiFormat;
+  CLI::Option* optOverrideGtFile;
 
   std::string kitti_basedir;
+
+  Cli()
+  {
+    optKittiBasedir = cmd.add_option(
+        "-k,--kitti-basedir", arg_kitti_basedir,
+        "Path to the kitti datasets. Overrides to the default, which is "
+        "reading the env var `KITTI_BASE_DIR`.");
+
+    cmd.add_option("-r,--result-tum-path", arg_result_path, "File to evaluate, in TUM format")
+        ->required();
+
+    optSavePathKittiFormat = cmd.add_option(
+        "--save-as-kitti", argSavePathKittiFormat,
+        "If given, will transform the input path from the LIDAR frame to the "
+        "cam0 frame and save the path to a TXT file in the format expected by "
+        "KITTI dev kit.");
+
+    cmd.add_option(
+        "-s,--sequence", arg_seq,
+        "The sequence number of the path{s} file{s} to evaluate, used to find "
+        "out GT and calibration files for the Kitti dataset.");
+
+    optOverrideGtFile = cmd.add_option(
+        "--gt-tum-path", arg_override_gt_file,
+        "If provided, the --sequence flag will be ignored and this particular "
+        "file in TUM format will be read and used as ground truth to compare "
+        "against the resulting odometry path.");
+
+    cmd.add_flag("--no-figures", argSkipFigures, "Skip generating the error figures");
+
+    cmd.add_flag(
+        "--result-in-kitti-format", argResultInKittiFormat,
+        "Use to read solution trajectory files in KITTI (4*3 elements per row) "
+        "format instead of in TUM format");
+  }
 };
 
 // points to CPose3D path from odometry/slam
@@ -127,8 +110,8 @@ static void do_kitti_eval_error(Cli& cli)
 
   if (cli.kitti_basedir.empty())
   {
-    if (cli.arg_kitti_basedir.isSet())
-      cli.kitti_basedir = cli.arg_kitti_basedir.getValue();
+    if (cli.optKittiBasedir->count() > 0)
+      cli.kitti_basedir = cli.arg_kitti_basedir;
     else
     {
       throw std::runtime_error(
@@ -139,7 +122,7 @@ static void do_kitti_eval_error(Cli& cli)
   ASSERT_DIRECTORY_EXISTS_(cli.kitti_basedir);
   std::cout << "Using kitti datasets basedir: " << cli.kitti_basedir << "\n";
 
-  if (!cli.arg_override_gt_file.isSet()) ASSERT_DIRECTORY_EXISTS_(cli.kitti_basedir + "/poses"s);
+  if (cli.optOverrideGtFile->count() == 0) ASSERT_DIRECTORY_EXISTS_(cli.kitti_basedir + "/poses"s);
 
   // Run evaluation
   eval(cli);
@@ -147,12 +130,11 @@ static void do_kitti_eval_error(Cli& cli)
 
 int main(int argc, char** argv)
 {
+  Cli cli;
+  CLI11_PARSE(cli.cmd, argc, argv);
+
   try
   {
-    // Parse arguments:
-    Cli cli;
-
-    if (!cli.cmd.parse(argc, argv)) return 1;  // should exit.
     do_kitti_eval_error(cli);
     return 0;
   }
@@ -228,9 +210,9 @@ std::vector<Matrix> loadPoses_tum_format(
 
   std::optional<std::ofstream> fKittiOut;
 
-  if (!isGT && cli.argSavePathKittiFormat.isSet())
+  if (!isGT && cli.optSavePathKittiFormat->count() > 0)
   {
-    const auto fil = cli.argSavePathKittiFormat.getValue();
+    const auto fil = cli.argSavePathKittiFormat;
     fKittiOut.emplace();
     fKittiOut->open(fil);
     ASSERT_(*fKittiOut);
@@ -527,7 +509,7 @@ void plotPathPlot(Cli& cli, string dir, vector<int32_t>& roi, int32_t idx)
   }
 
   // create pdf and crop
-  if (!cli.argSkipFigures.isSet())
+  if (!cli.argSkipFigures)
   {
     sprintf(command, "cd %s; ps2pdf %02d.eps %02d_large.pdf", dir.c_str(), idx, idx);
     system(command);
@@ -711,7 +693,7 @@ void plotErrorPlots(Cli& cli, string dir, const char* prefix)
     }
 
     // create pdf and crop
-    if (!cli.argSkipFigures.isSet())
+    if (!cli.argSkipFigures)
     {
       sprintf(
           command, "cd %s; ps2pdf %s_%s.eps %s_%s_large.pdf", dir.c_str(), prefix, suffix, prefix,
@@ -767,7 +749,7 @@ bool eval(Cli& cli)  // string result_sha,Mail* mail)
   // ground truth and result directories
   string gt_dir = cli.kitti_basedir + "/poses";
 
-  string result_dir = mrpt::system::extractFileDirectory(cli.arg_result_path.getValue());
+  string result_dir = mrpt::system::extractFileDirectory(cli.arg_result_path);
   if (result_dir.empty()) result_dir = ".";
 
   std::cout << "Using as result_dir: " << result_dir << "\n";
@@ -798,14 +780,14 @@ bool eval(Cli& cli)  // string result_sha,Mail* mail)
 
   std::vector<InfoPerSeq> seqs;
 
-  if (cli.arg_override_gt_file.isSet())
+  if (cli.optOverrideGtFile->count() > 0)
   {
     // custom ground truth TUM file(s):
 
     // multiple files?
     std::vector<std::string> gtFiles, resultFiles;
-    mrpt::system::tokenize(cli.arg_override_gt_file.getValue(), ",", gtFiles);
-    mrpt::system::tokenize(cli.arg_result_path.getValue(), ",", resultFiles);
+    mrpt::system::tokenize(cli.arg_override_gt_file, ",", gtFiles);
+    mrpt::system::tokenize(cli.arg_result_path, ",", resultFiles);
 
     ASSERT_EQUAL_(gtFiles.size(), resultFiles.size());
 
@@ -822,14 +804,14 @@ bool eval(Cli& cli)  // string result_sha,Mail* mail)
   else
   {
     // original KITTI dataset GT files:
-    for (int32_t i : cli.arg_seq.getValue())
+    for (int32_t i : cli.arg_seq)
     {
       auto& s = seqs.emplace_back();
 
       s.is_kitti     = true;
       s.kitti_seq_no = i;
       s.file_name    = mrpt::format("%02d.txt", i);
-      s.result_file  = mrpt::format(cli.arg_result_path.getValue().c_str(), i);
+      s.result_file  = mrpt::format(cli.arg_result_path.c_str(), i);
       s.kitti_calib_file =
           mrpt::format("%s/sequences/%02i/calib.txt", cli.kitti_basedir.c_str(), i);
       s.kitti_gt_poses_file = gt_dir + "/" + s.file_name;
@@ -842,10 +824,10 @@ bool eval(Cli& cli)  // string result_sha,Mail* mail)
     vector<Matrix> poses_result;
     vector<Matrix> poses_gt;
 
-    if (cli.argResultInKittiFormat.isSet())
+    if (cli.argResultInKittiFormat)
     {
       // for use with real KITTI GT only:
-      ASSERT_(!cli.arg_override_gt_file.isSet());
+      ASSERT_(cli.optOverrideGtFile->count() == 0);
       poses_gt     = loadPoses(seq.kitti_gt_poses_file);
       poses_result = loadPoses(seq.result_file);
     }
@@ -887,7 +869,7 @@ bool eval(Cli& cli)  // string result_sha,Mail* mail)
     total_err.insert(total_err.end(), seq_err.begin(), seq_err.end());
 
     // for first half => plot trajectory and compute individual stats
-    if (/*seq.kitti_seq_no <= 15 && */ !cli.argSkipFigures.isSet())
+    if (/*seq.kitti_seq_no <= 15 && */ !cli.argSkipFigures)
     {
       // save + plot bird's eye view trajectories
       savePathPlot(poses_gt, poses_result, plot_path_dir + "/" + seq.file_name);
