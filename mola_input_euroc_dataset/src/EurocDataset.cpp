@@ -201,9 +201,8 @@ void EurocDataset::initialize_rds(const Yaml& c)
   // Debug: dump poses.
   for (unsigned int i = 0; i < cam_poses_.size(); i++)
   {
-    mrpt::poses::CPose3D        p(cam_poses_[i]);
-    mrpt::math::CMatrixDouble44 T;
-    p.getHomogeneousMatrix(T);
+    mrpt::poses::CPose3D              p(cam_poses_[i]);
+    const mrpt::math::CMatrixDouble44 T = p.getHomogeneousMatrix();
     MRPT_LOG_DEBUG_STREAM(
         "cam" << i << " pose on vehicle: " << cam_poses_[i] << "\nTransf. matrix:\n"
               << T);
