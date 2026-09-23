@@ -3,6 +3,12 @@ Changelog for package kitti_metrics_eval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+Forthcoming
+-----------
+* Port to MRPT 3.x, including CLI11 migration for the kitti-metrics-eval tool
+* Declare package.xml deps that CMakeLists.txt already requires
+* Contributors: Jose Luis Blanco-Claraco
+
 3.0.0 (2026-05-12)
 ------------------
 * Merge pull request `#143 <https://github.com/MOLAorg/mola_academic_datasets/issues/143>`_ from MOLAorg/bump-cmake-version

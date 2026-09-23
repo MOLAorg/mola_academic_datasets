@@ -2,6 +2,14 @@
 Changelog for package mola_input_euroc_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix warnings
+* Port to MRPT 3.x
+* Declare package.xml deps that CMakeLists.txt already requires
+* Report the dataset playback time to the GUI
+* Contributors: Jose Luis Blanco-Claraco
+
 3.0.0 (2026-05-12)
 ------------------
 * Merge pull request `#143 <https://github.com/MOLAorg/mola_academic_datasets/issues/143>`_ from MOLAorg/bump-cmake-version
