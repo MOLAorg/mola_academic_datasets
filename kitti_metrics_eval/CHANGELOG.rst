@@ -3,8 +3,8 @@ Changelog for package kitti_metrics_eval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Forthcoming
------------
+3.1.0 (2026-09-23)
+------------------
 * Port to MRPT 3.x, including CLI11 migration for the kitti-metrics-eval tool
 * Declare package.xml deps that CMakeLists.txt already requires
 * Contributors: Jose Luis Blanco-Claraco

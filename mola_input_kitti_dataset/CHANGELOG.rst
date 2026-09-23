@@ -2,8 +2,8 @@
 Changelog for package mola_input_kitti_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-09-23)
+------------------
 * Port to MRPT 3.x
 * Add MOLA_PUBLISH_GROUND_TRUTH, a kill switch for the reference trajectory
 * Declare package.xml deps that CMakeLists.txt already requires

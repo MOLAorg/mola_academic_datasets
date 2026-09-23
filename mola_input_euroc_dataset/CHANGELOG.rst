@@ -2,8 +2,8 @@
 Changelog for package mola_input_euroc_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-09-23)
+------------------
 * Fix warnings
 * Port to MRPT 3.x
 * Declare package.xml deps that CMakeLists.txt already requires
