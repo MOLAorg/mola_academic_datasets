@@ -231,9 +231,8 @@ std::vector<Matrix> loadPoses_tum_format(
 
     pose = pose - pose0;
 
-    mrpt::math::CMatrixDouble44 HM;
-    pose.getHomogeneousMatrix(HM);
-    poses[i++] = HM;
+    const mrpt::math::CMatrixDouble44 HM = pose.getHomogeneousMatrix();
+    poses[i++]                           = HM;
 
     // save in kitti format?
     if (fKittiOut)
