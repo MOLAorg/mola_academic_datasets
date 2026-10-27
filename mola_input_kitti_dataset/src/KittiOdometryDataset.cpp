@@ -37,6 +37,7 @@
 #include <mrpt/system/filesystem.h>  //ASSERT_DIRECTORY_EXISTS_()
 
 #include <Eigen/Dense>
+#include <cmath>
 
 using namespace mola;
 
@@ -558,14 +559,24 @@ void KittiOdometryDataset::load_lidar(timestep_t step) const
     const auto& ys = obs->pointcloud->getPointsBufferRef_y();
     const auto& zs = obs->pointcloud->getPointsBufferRef_z();
 
+    // Rodrigues' formula for an axis k orthogonal to the point:
+    //   p' = p cos(a) + (k x p) sin(a)
+    // with k = (p x uz)/|p x uz|, so the angle's sin/cos are computed once.
+    const double          cosA = std::cos(VERTICAL_ANGLE_OFFSET);
+    const double          sinA = std::sin(VERTICAL_ANGLE_OFFSET);
     const Eigen::Vector3d uz(0., 0., 1.);
     for (size_t i = 0; i < xs.size(); i++)
     {
       const Eigen::Vector3d pt(xs[i], ys[i], zs[i]);
       const Eigen::Vector3d rotationVector = pt.cross(uz);
 
-      const auto aa = Eigen::AngleAxisd(VERTICAL_ANGLE_OFFSET, rotationVector.normalized());
-      const Eigen::Vector3d newPt = aa * pt;
+      const double axisNorm = rotationVector.norm();
+      if (axisNorm < 1e-9)
+      {
+        continue;  // on the vertical axis: no rotation is defined, nor needed
+      }
+
+      const Eigen::Vector3d newPt = pt * cosA + (rotationVector / axisNorm).cross(pt) * sinA;
 
       obs->pointcloud->setPoint(i, {newPt.x(), newPt.y(), newPt.z()});
     }
