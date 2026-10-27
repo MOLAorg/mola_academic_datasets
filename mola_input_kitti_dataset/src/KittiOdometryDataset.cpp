@@ -571,7 +571,7 @@ void KittiOdometryDataset::load_lidar(timestep_t step) const
       const Eigen::Vector3d rotationVector = pt.cross(uz);
 
       const double axisNorm = rotationVector.norm();
-      if (axisNorm < 1e-9)
+      if (axisNorm == 0)
       {
         continue;  // on the vertical axis: no rotation is defined, nor needed
       }
