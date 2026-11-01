@@ -3,8 +3,8 @@ Changelog for package kitti_metrics_eval
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Forthcoming
------------
+3.1.1 (2026-11-01)
+------------------
 * Replace deprecated CPose3D::getHomogeneousMatrix(out) by the by-value overload
 * Contributors: Jose Luis Blanco-Claraco
 
