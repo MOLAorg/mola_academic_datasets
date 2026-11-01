@@ -3,6 +3,9 @@ Changelog for package mola_input_mulran_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+Forthcoming
+-----------
+
 3.1.0 (2026-09-23)
 ------------------
 * Port to MRPT 3.x

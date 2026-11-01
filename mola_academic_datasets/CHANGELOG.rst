@@ -2,6 +2,9 @@
 Changelog for package mola_academic_datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.1.0 (2026-09-23)
 ------------------
 

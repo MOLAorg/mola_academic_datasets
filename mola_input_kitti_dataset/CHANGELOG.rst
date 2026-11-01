@@ -2,6 +2,12 @@
 Changelog for package mola_input_kitti_dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* KITTI vertical angle correction with precomputed sin/cos; points on the vertical axis are left unchanged (`#6 <https://github.com/MOLAorg/mola_academic_datasets/issues/6>`_)
+* Replace deprecated CPose3D::getHomogeneousMatrix(out) by the by-value overload
+* Contributors: Jose Luis Blanco-Claraco
+
 3.1.0 (2026-09-23)
 ------------------
 * Port to MRPT 3.x
